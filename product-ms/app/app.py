@@ -16,12 +16,20 @@ models.create_table(app)
 def hello():
     return 'Hello, welcome to the ESBay Product API\n'
 
-@app.route('/api/product/create', methods=['POST'])
+@app.route('/api/product/create', methods=['POST', 'GET'])
 def post_create():
 
-    name = request.form['name']
-    seller = request.form['seller']
-    price = request.form['price']
+    name = None
+    seller = None
+    price = None
+    if request.method == 'POST':
+        name = request.form['name']
+        seller = request.form['seller']
+        price = request.form['price']
+    elif request.method == 'GET':
+        name = request.args.get('name')
+        seller = request.args.get('seller')
+        price = request.args.get('price')
 
     item = models.Product()
     item.name = name

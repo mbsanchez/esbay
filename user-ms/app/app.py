@@ -16,13 +16,22 @@ models.create_table(app)
 def hello():
     return 'Hello, welcome to the ESBay User API\n'
 
-@app.route('/api/user/create', methods=['POST'])
+@app.route('/api/user/create', methods=['POST', 'GET'])
 def post_register():
+    first_name = None
+    last_name = None
+    password = None
 
-    first_name = request.form['first_name']
-    last_name = request.form['last_name']
-    email = request.form['email']
-    password = sha256_crypt.hash((str(request.form['password'])))
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        password = sha256_crypt.hash((str(request.form['password'])))
+    elif request.method == 'GET':
+        first_name = request.args.get('first_name')
+        last_name = request.args.get('last_name')
+        email = request.args.get('email')
+        password = sha256_crypt.hash((str(request.args.get('password'))))
 
     user = models.User()
     user.email = email
@@ -46,6 +55,21 @@ def get_users():
         data.append(row.to_json())
 
     response = jsonify(data)
+
+    return response
+
+@app.route('/api/user', methods=['GET'])
+def get_user():
+    email = None
+    if request.method == 'GET':
+        email = request.args.get('email')
+
+    user = models.User.query.filter_by(email=email).first()
+
+    if user is not None:
+        response = jsonify({'result': user.to_json()})
+    else:
+        response = jsonify({'message': 'Cannot find username', 'email': email}), 404
 
     return response
 
